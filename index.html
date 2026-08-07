@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Guardian | حماية مستقبلية بمستوى عالمي</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* ==========================================
+           1. المتغيرات والأنماط الرئيسية (CSS Variables)
+           ========================================== */
+        :root {
+            --bg-color: #030712;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(0, 242, 254, 0.2);
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --accent: #7928ca;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glow: 0 0 25px rgba(0, 242, 254, 0.3);
+            --font-title: 'Tajawal', sans-serif;
+            --font-body: 'Cairo', sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(0, 0, 0, 0.04);
+            --border-color: rgba(0, 150, 255, 0.3);
+            --primary: #0072ff;
+            --secondary: #00c6ff;
+            --accent: #6b21a8;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --glow: 0 0 20px rgba(0, 114, 255, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* زجاجية الفخامة (Glassmorphic Elements) */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: var(--glow);
+            padding: 30px;
+        }
+
+        /* أزرار تفاعلية احترافية */
+        .btn-futuristic {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            font-weight: 800;
+            padding: 14px 36px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            box-shadow: var(--glow);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-futuristic:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 0 35px var(--primary);
+        }
+
+        /* زر التبديل بين الوضع الليلي والنهاري */
+        .theme-toggle {
+            position: fixed;
+            top: 25px;
+            left: 25px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--glow);
+        }
+
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 3rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 60px;
+            background: linear-gradient(90deg, var(--text-main), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        section {
+            padding: 100px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ==========================================
+           2. القسم الرئيسي مع النموذج 3D الحقيقي
+           ========================================== */
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+            align-items: center;
+            gap: 40px;
+            padding-top: 60px;
+        }
+
+        .hero-title {
+            font-family: var(--font-title);
+            font-size: 4.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text-main) 30%, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #threejs-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            cursor: grab;
+        }
+
+        #threejs-container:active {
+            cursor: grabbing;
+        }
+
+        /* ==========================================
+           3. الخريطة التفاعلية الحية (Leaflet Map)
+           ========================================== */
+        #live-map {
+            width: 100%;
+            height: 450px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--glow);
+            z-index: 1;
+        }
+
+        /* ==========================================
+           4. الهيكل والتصميم المترابط للجهاز والهاتف
+           ========================================== */
+        .phone-mockup {
+            width: 320px;
+            height: 640px;
+            background: #000;
+            border: 8px solid #334155;
+            border-radius: 48px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5), var(--glow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phone-header {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .phone-screen {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: radial-gradient(circle at top, rgba(0, 242, 254, 0.1), transparent);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        /* ==========================================
+           5. جدول التكلفة والأسعار المتقدم
+           ========================================== */
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        .pricing-table th, .pricing-table td {
+            padding: 18px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .pricing-table th {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* ==========================================
+           6. الاستجابة مع مختلف الأجهزة (Responsive)
+           ========================================== */
+        @media (max-width: 992px) {
+            .hero { grid-template-columns: 1fr; text-align: center; }
+            .hero-title { font-size: 3.2rem; }
+            #threejs-container { height: 350px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="theme-toggle" id="themeToggle" title="تبديل المظهر">🌙</button>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Smart Guardian</h1>
+            <p style="font-size: 1.3rem; color: var(--text-muted); margin-bottom: 30px;">
+                الجيل الجديد من أنظمة الأمان والتتبع الذكي. جودة تصنيع فائقة، تتبع فوري، وحماية مطلقة لممتلكاتك بأسلوب Apple وTesla.
+            </p>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <a href="#map-section" class="btn-futuristic" onclick="playAudio()">تتبع حياً الآن 🛰️</a>
+                <a href="#pricing" class="btn-futuristic" style="background: transparent; border: 1px solid var(--primary);" onclick="playAudio()">جدول التكلفة 📊</a>
+            </div>
+        </div>
+        <div class="glass-card" style="padding: 10px;">
+            <div id="threejs-container"></div>
+            <p style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+                💡 استخدم الماوس أو اللمس لتدوير النموذج وتفحصه بزاوية 360 درجة
+            </p>
+        </div>
+    </section>
+
+    <section id="map-section">
+        <h2 class="section-title">التتبع الجغرافي الحي</h2>
+        <div class="glass-card">
+            <p style="margin-bottom: 20px; color: var(--text-muted);">
+                تتبع حركة جهاز Smart Guardian مباشرة على خريطة تفاعلية مدعومة بالأقمار الصناعية:
+            </p>
+            <div id="live-map"></div>
+        </div>
+    </section>
+
+    <section id="components">
+        <h2 class="section-title">الهندسة الداخلية والمكونات</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+            <div class="glass-card">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">🛰️ شريحة GPS U-Blox</h3>
+                <p style="color: var(--text-muted);">دقة استقبال تصل إلى 1 متر بفضل دعم الاتصال المتعدد بالأقمار الصناعية (GPS, GLONASS, Galileo).</p>
+            </div>
+            <div class="glass-card">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">🔋 بطارية Solid-State</h3>
+                <p style="color: var(--text-muted);">سعة عالية مع نظام إدارة طاقة ذكي يمنح الجهاز فترة عمل تصل لـ 90 يوماً متواصلة.</p>
+            </div>
+            <div class="glass-card">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">🧲 مغناطيس النيوديميوم N52</h3>
+                <p style="color: var(--text-muted);">قوة تثبيت هائلة تصل إلى 25 كجم، تسمح بالالتصاق التام بأسفل المركبات والمعدات الثقيلة.</p>
+            </div>
+            <div class="glass-card">
+                <h3 style="color: var(--primary); margin-bottom: 15px;">📶 وحدة eSIM مدمجة</h3>
+                <p style="color: var(--text-muted);">تغطية عالمية فورية مع تشفير بيانات مستمر لحماية التواجد والموقع من أي اختراق.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="mobile-app">
+        <h2 class="section-title">تطبيق التحكم الذكي</h2>
+        <div class="phone-mockup">
+            <div class="phone-header">
+                <h4 style="color: var(--primary);">Smart Guardian OS</h4>
+                <span class="status-badge">متصل الآن</span>
+            </div>
+            <div class="phone-screen">
+                <div class="glass-card" style="padding: 15px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">الموقع الحالي</p>
+                    <p style="font-weight: bold;">الرياض، المملكة العربية السعودية</p>
+                </div>
+                <div class="glass-card" style="padding: 15px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">مستوى البطارية</p>
+                    <p style="font-weight: bold; color: #00ff88;">98% (تبقى 85 يوماً)</p>
+                </div>
+                <div class="glass-card" style="padding: 15px;">
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">السرعة الحالية</p>
+                    <p style="font-weight: bold; color: var(--primary);">0 كم/س (متوقف)</p>
+                </div>
+                <button class="btn-futuristic" style="width: 100%; justify-content: center; margin-top: auto; font-size: 0.9rem;" onclick="playAudio(); alert('تم تفعيل إنذار الأمان!')">
+                    تفعيل وضع السرقة 🚨
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <h2 class="section-title">دراسة الجدوى والتكلفة</h2>
+        <div class="glass-card" style="overflow-x: auto;">
+            <table class="pricing-table">
+                <thead>
+                    <tr>
+                        <th>المكون / القطعة</th>
+                        <th>التكلفة التقديرية (USD)</th>
+                        <th>ملاحظات الهندسة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>معالج وحدات GPS وeSIM M2M</td>
+                        <td>$18.50</td>
+                        <td>شرائح صناعية عالية الدقة مقاومة للحرارة العالية</td>
+                    </tr>
+                    <tr>
+                        <td>البطارية وإدارة الطاقة الذكية</td>
+                        <td>$12.00</td>
+                        <td>خلايا ليثيوم متطورة ذات تفريغ بطيء جداً</td>
+                    </tr>
+                    <tr>
+                        <td>الهيكل الخارجي (Carbon Fiber + IP67)</td>
+                        <td>$8.00</td>
+                        <td>مقاوم للماء والصدمات والظروف القاسية</td>
+                    </tr>
+                    <tr>
+                        <td>المغناطيس المدمج والحساسات الدقيقة</td>
+                        <td>$4.50</td>
+                        <td>حساسات للحركة والاهتزاز وحساس الانفصال</td>
+                    </tr>
+                    <tr style="font-weight: bold; background: rgba(0,242,254,0.1);">
+                        <td>إجمالي تكلفة التصنيع (COGS)</td>
+                        <td style="color: var(--primary);">$43.00</td>
+                        <td>لكل وحدة تصنيعية</td>
+                    </tr>
+                    <tr style="font-weight: bold; background: rgba(0,255,136,0.1);">
+                        <td>سعر البيع المقترح للجمهور</td>
+                        <td style="color: #00ff88;">$129.00</td>
+                        <td>هامش ربح ممتاز يسمح بالتطوير المستمر</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        /* ==========================================
+           أ. المؤثرات الصوتية الخفيفة (Audio Engine)
+           ========================================== */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playAudio() {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.08);
+        }
+
+        /* ==========================================
+           ب. نظام المظهر (Dark / Light Theme Toggle)
+           ========================================== */
+        const themeToggleBtn = document.getElementById('themeToggle');
+        themeToggleBtn.addEventListener('click', () => {
+            playAudio();
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            themeToggleBtn.textContent = newTheme === 'dark' ? '🌙' : '☀️';
+        });
+
+        /* ==========================================
+           ج. محرك Three.js للنموذج ثلاثي الأبعاد 3D
+           ========================================== */
+        const container = document.getElementById('threejs-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // إنشاء نموذج الجهاز (Futuristic Smart Guardian Device)
+        const group = new THREE.Group();
+
+        // الهيكل الخارجي
+        const bodyGeometry = new THREE.BoxGeometry(2.2, 0.6, 2.2);
+        const bodyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x0f172a,
+            roughness: 0.2,
+            metalness: 0.8
+        });
+        const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        group.add(bodyMesh);
+
+        // الحلقة الضوئية التفاعلية
+        const ringGeometry = new THREE.TorusGeometry(0.7, 0.08, 16, 100);
+        const ringMaterial = new THREE.MeshBasicMaterial({ color: 0x00f2fe });
+        const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+        ringMesh.rotation.x = Math.PI / 2;
+        ringMesh.position.y = 0.31;
+        group.add(ringMesh);
+
+        // إضاءة المشهد
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0x00f2fe, 2, 10);
+        pointLight.position.set(2, 3, 2);
+        scene.add(pointLight);
+
+        camera.position.set(0, 3, 5);
+        camera.lookAt(0, 0, 0);
+
+        // التحكم بالتدوير من خلال الماوس/اللمس
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        container.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('mouseup', () => isDragging = false);
+
+        container.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const deltaMove = {
+                x: e.clientX - previousMousePosition.x,
+                y: e.clientY - previousMousePosition.y
+            };
+
+            group.rotation.y += deltaMove.x * 0.01;
+            group.rotation.x += deltaMove.y * 0.01;
+
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        scene.add(group);
+
+        // التحديث والمحاكاة المستمرة
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            if (!isDragging) {
+                group.rotation.y += 0.005; // دوران تلقائي هادئ
+            }
+            renderer.render(scene, camera);
+        }
+        animate3D();
+
+        // التجاوب عند تغيير حجم الشاشة
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        /* ==========================================
+           د. إعداد الخريطة التفاعلية الحية (Leaflet Map)
+           ========================================== */
+        const map = L.map('live-map').setView([24.7136, 46.6753], 13); // إحداثيات مدينة الرياض
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // إضافة مؤشر موقع الجهاز
+        const marker = L.marker([24.7136, 46.6753]).addTo(map);
+        marker.bindPopup('<b>Smart Guardian</b><br>الحالة: آمن ومنتظم.').openPopup();
+
+        // محاكاة تحرك الجهاز بشكل حي على الخريطة
+        let lat = 24.7136;
+        let lng = 46.6753;
+        setInterval(() => {
+            lat += (Math.random() - 0.5) * 0.002;
+            lng += (Math.random() - 0.5) * 0.002;
+            marker.setLatLng([lat, lng]);
+        }, 3000);
+    </script>
+</body>
+</html>
