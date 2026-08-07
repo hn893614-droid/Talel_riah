@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Guardian - تجربة التتبع الذكية المستقبلية</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0A0D14;
+            --bg-card: rgba(18, 24, 38, 0.85);
+            --primary-vibrant: #582CFF;
+            --secondary-neon: #00F5A0;
+            --accent-coral: #FF4757;
+            --amber-warm: #FFA502;
+            --purple-deep: #9B51E0;
+            --text-main: #F1F5F9;
+            --text-sub: #94A3B8;
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glow-primary: rgba(88, 44, 255, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(88, 44, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 245, 160, 0.1) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* 1. الشاشة الافتتاحية السينمائية */
+        #intro-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #05070B;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s cubic-bezier(0.77, 0, 0.175, 1), visibility 1s;
+        }
+
+        .loader-logo {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #FFF 30%, var(--secondary-neon) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            animation: pulseText 2s infinite alternate;
+        }
+
+        .loader-bar-container {
+            width: 250px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loader-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-vibrant), var(--secondary-neon));
+            animation: loadProgress 2.2s ease-in-out forwards;
+        }
+
+        @keyframes loadProgress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes pulseText {
+            0% { transform: scale(0.98); opacity: 0.8; }
+            100% { transform: scale(1.02); opacity: 1; }
+        }
+
+        /* حاوي العرض السينمائي */
+        .deck-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100vw;
+            min-height: 100vh;
+            scroll-snap-align: start;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 20px;
+            overflow: hidden;
+        }
+
+        /* 2. انيميشن التمرير الظاهر للبطاقات */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 45px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            max-width: 950px;
+            width: 92%;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease, border-color 0.4s ease;
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+        }
+
+        .slide.active .glass-card {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0, 245, 160, 0.4);
+            box-shadow: 0 30px 70px rgba(88, 44, 255, 0.3);
+        }
+
+        /* العناوين والطباعة */
+        h1 {
+            font-size: 3.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #FFF 30%, var(--secondary-neon) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        h2 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: #FFF;
+            margin-bottom: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--secondary-neon);
+            border-radius: 2px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: var(--text-sub);
+            line-height: 1.8;
+            font-weight: 400;
+        }
+
+        /* 3. مجسم الجهاز ثلاثي الأبعاد الاحترافي */
+        .device-3d-wrapper {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 25px auto;
+            perspective: 1000px;
+        }
+
+        .device-3d-hardware {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1E293B, #0F172A);
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px var(--glow-primary);
+            border: 2px solid var(--glass-border);
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float3D 5s ease-in-out infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .device-3d-hardware::before {
+            content: '';
+            position: absolute;
+            inset: 12px;
+            border-radius: 30px;
+            background: radial-gradient(circle, rgba(88, 44, 255, 0.2) 0%, rgba(0,0,0,0) 70%);
+            border: 1px solid rgba(0, 245, 160, 0.2);
+        }
+
+        .led-indicator {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--secondary-neon);
+            box-shadow: 0 0 12px var(--secondary-neon);
+            animation: blinkLED 1.2s infinite alternate;
+        }
+
+        .radar-wave-advanced {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50px;
+            border: 2px solid var(--secondary-neon);
+            opacity: 0;
+            animation: radarPingAdv 3s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            pointer-events: none;
+        }
+
+        @keyframes float3D {
+            0%, 100% { transform: translateY(0) rotateX(10deg) rotateY(-10deg); }
+            50% { transform: translateY(-15px) rotateX(-5deg) rotateY(10deg); }
+        }
+
+        @keyframes blinkLED {
+            0% { opacity: 0.2; }
+            100% { opacity: 1; transform: scale(1.2); }
+        }
+
+        @keyframes radarPingAdv {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+
+        /* 4. الرحلة البصرية للمشكلة والتفاعل */
+        .story-timeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .story-step {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px 15px;
+            transition: all 0.4s ease;
+        }
+
+        .story-step:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--secondary-neon);
+        }
+
+        /* 5. خريطة GPS المتقدمة والمحاكاة */
+        .gps-simulator-v2 {
+            width: 100%;
+            height: 260px;
+            background: #070A12;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+            margin-top: 25px;
+        }
+
+        .vector-map-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.25;
+            background-image: 
+                radial-gradient(var(--secondary-neon) 1px, transparent 0),
+                linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px, 40px 40px, 40px 40px;
+        }
+
+        .animated-route-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .phone-notification-pop {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(18, 24, 38, 0.95);
+            border: 1px solid var(--secondary-neon);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(0,245,160,0.3);
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .slide.active .phone-notification-pop {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* 6. الأرقام المتحركة (Counters) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--secondary-neon);
+        }
+
+        /* الشبكة والمميزات */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+            width: 100%;
+        }
+
+        .feature-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.4s ease;
+        }
+
+        .feature-box:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: var(--secondary-neon);
+            box-shadow: 0 10px 30px rgba(0, 245, 160, 0.15);
+        }
+
+        .svg-icon {
+            width: 44px;
+            height: 44px;
+            fill: var(--secondary-neon);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-box:hover .svg-icon {
+            transform: scale(1.15);
+        }
+
+        /* مخطط مسار العمليات */
+        .process-flow {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .flow-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 22px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            font-weight: 700;
+            color: #FFF;
+        }
+
+        .arrow-svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--amber-warm);
+            animation: bounce 1.5s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-8px); }
+        }
+
+        /* لعبة "اختبر فهمك" */
+        .quiz-container {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        .quiz-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 15px 20px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .quiz-option:hover {
+            background: rgba(88, 44, 255, 0.2);
+            border-color: var(--primary-vibrant);
+        }
+
+        .quiz-feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 16px;
+            display: none;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* الأزرار التفاعلية */
+        .action-btn {
+            background: linear-gradient(135deg, var(--primary-vibrant) 0%, var(--purple-deep) 100%);
+            color: #FFF;
+            border: none;
+            padding: 16px 36px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(88, 44, 255, 0.4);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(88, 44, 255, 0.6);
+        }
+
+        /* 7. لوحة التحكم بالصوت والمؤشر */
+        .top-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: rgba(18, 24, 38, 0.8);
+            border: 1px solid var(--glass-border);
+            color: #FFF;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            border-color: var(--secondary-neon);
+            transform: scale(1.1);
+        }
+
+        .nav-indicator {
+            position: fixed;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: var(--secondary-neon);
+            box-shadow: 0 0 12px var(--secondary-neon);
+            transform: scale(1.5);
+        }
+
+        /* 8. تحسينات التجاوب مع شاشات الجوال */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 1.8rem; }
+            .glass-card { padding: 30px 20px; width: 95%; }
+            .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+            .process-flow { flex-direction: column; }
+            .arrow-svg { transform: rotate(90deg); }
+            .nav-indicator { left: 10px; }
+            .device-3d-wrapper { width: 150px; height: 150px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="intro-loader">
+        <div class="loader-logo">Smart Guardian</div>
+        <div class="loader-bar-container">
+            <div class="loader-bar"></div>
+        </div>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-sub);">جاري تحميل تجربة التتبع المستقبلية...</p>
+    </div>
+
+    <div class="top-controls">
+        <button class="icon-btn" id="audioToggleBtn" onclick="toggleAudio()" title="تشغيل/إيقاف المؤثرات الصوتية">
+            🔊
+        </button>
+    </div>
+
+    <div class="nav-indicator" id="navIndicator">
+        <div class="dot active" onclick="scrollToSlide(0)"></div>
+        <div class="dot" onclick="scrollToSlide(1)"></div>
+        <div class="dot" onclick="scrollToSlide(2)"></div>
+        <div class="dot" onclick="scrollToSlide(3)"></div>
+        <div class="dot" onclick="scrollToSlide(4)"></div>
+        <div class="dot" onclick="scrollToSlide(5)"></div>
+        <div class="dot" onclick="scrollToSlide(6)"></div>
+        <div class="dot" onclick="scrollToSlide(7)"></div>
+        <div class="dot" onclick="scrollToSlide(8)"></div>
+        <div class="dot" onclick="scrollToSlide(9)"></div>
+    </div>
+
+    <div class="deck-container" id="deckContainer">
+
+        <section class="slide active" id="slide1">
+            <div class="glass-card">
+                <h1>Smart Guardian</h1>
+                <p style="color: var(--secondary-neon); font-weight: 700; font-size: 1.4rem;">مستقبل حماية وتتبع الممتلكات بين يديك</p>
+                
+                <div class="device-3d-wrapper">
+                    <div class="device-3d-hardware">
+                        <div class="led-indicator"></div>
+                        <svg class="svg-icon" viewBox="0 0 24 24" style="width: 60px; height: 60px;">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8s0 0 0 0z"/>
+                        </svg>
+                        <div class="radar-wave-advanced"></div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 15px; font-size: 1.3rem; color: #FFF;">
+                    "لا تقلق على ما يهمك... <span style="color:var(--secondary-neon)">Smart Guardian</span> يعرف مكانه دائماً."
+                </p>
+            </div>
+        </section>
+
+        <section class="slide" id="slide2">
+            <div class="glass-card">
+                <h2>تخيل هذا الموقف...</h2>
+                
+                <div class="story-timeline">
+                    <div class="story-step">
+                        <div style="font-size:2rem;">🛍️</div>
+                        <strong style="color:#FFF;">الخروج</strong>
+                        <p style="font-size:0.85rem;">خرجت مستعجلاً من المركز التجاري</p>
+                    </div>
+                    <div class="story-step">
+                        <div style="font-size:2rem;">🚶</div>
+                        <strong style="color:#FFF;">الوصول</strong>
+                        <p style="font-size:0.85rem;">وصلت للموقف المفترض للسيارة</p>
+                    </div>
+                    <div class="story-step" style="border-color: var(--accent-coral); background: rgba(255, 71, 87, 0.1);">
+                        <div style="font-size:2rem;">❌</div>
+                        <strong style="color:var(--accent-coral);">المفاجأة</strong>
+                        <p style="font-size:0.85rem;">السيارة غير موجودة في مكانها!</p>
+                    </div>
+                    <div class="story-step" style="border-color: var(--secondary-neon); background: rgba(0, 245, 160, 0.1);">
+                        <div style="font-size:2rem;">💡</div>
+                        <strong style="color:var(--secondary-neon);">الحل الفوري</strong>
+                        <p style="font-size:0.85rem;">تشغيل Smart Guardian لتحديد الموقع</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <span style="background: var(--primary-vibrant); color: #FFF; padding: 12px 28px; border-radius: 30px; font-weight: 800; display: inline-block;">
+                        💡 هنا تبدأ حماية Smart Guardian الفورية!
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide3">
+            <div class="glass-card">
+                <h2>ما هو Smart Guardian؟</h2>
+                <div class="device-3d-wrapper" style="width: 120px; height: 120px;">
+                    <div class="device-3d-hardware" style="border-radius: 30px;">
+                        <div class="led-indicator"></div>
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    </div>
+                </div>
+                <p style="max-width: 750px; margin: 0 auto; font-size: 1.2rem; color: var(--text-main);">
+                    هو جهاز ذكي متناهي الصغر، مُصمم بتقنيات تشفير وتتبع عالية الدقة. يمكن إخفاؤه بذكاء داخل السيارة، الحقيبة، الدراجة، أو رفقة أطفالك وكبار السن.
+                </p>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" data-target="99.9">0</div>
+                        <small style="color:var(--text-sub)">دقة تحديد الموقع (%)</small>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" data-target="365">0</div>
+                        <small style="color:var(--text-sub)">يوم عمل بالبطارية</small>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" data-target="100">0</div>
+                        <small style="color:var(--text-sub)">تغطية عالمية (%)</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide4">
+            <div class="glass-card">
+                <h2>محاكاة الاتصال الحي (Live GPS)</h2>
+                <p>شاهد كيف تنتقل الإشارة من الجهاز في الميدان فوراً إلى شاشة هاتفك:</p>
+                
+                <div class="gps-simulator-v2">
+                    <div class="vector-map-bg"></div>
+                    <svg class="animated-route-svg">
+                        <path d="M 50 200 Q 200 50 350 180 T 600 100" fill="none" stroke="url(#lineGradient)" stroke-width="4" stroke-dasharray="8,8"/>
+                        <defs>
+                            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="var(--primary-vibrant)"/>
+                                <stop offset="100%" stop-color="var(--secondary-neon)"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    <div class="phone-notification-pop">
+                        <span style="font-size: 1.2rem;">📱</span>
+                        <div style="text-align: right;">
+                            <strong style="color: var(--secondary-neon); font-size: 0.85rem; display: block;">تم العثور على موقع الجهاز!</strong>
+                            <span style="color: #FFF; font-size: 0.75rem;">الإحداثيات: 36.8065° N, 10.1815° E</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="process-flow">
+                    <div class="flow-card">1. إرسال الإحداثيات</div>
+                    <svg class="arrow-svg" viewBox="0 0 24 24"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg>
+                    <div class="flow-card">2. معالجة السحابة</div>
+                    <svg class="arrow-svg" viewBox="0 0 24 24"><path d="M16.01 11H4v2h12.01v3L20 12l-3.99-4z"/></svg>
+                    <div class="flow-card">3. العرض على الخريطة</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide5">
+            <div class="glass-card">
+                <h2>التنبيه الصوتي الذكي</h2>
+                <p>تبحث عن حقيبتك أو مفاتيحك المفقودة في مكان قريب؟</p>
+                <p style="margin-top: 10px;">اضغط الزر أدناه لإطلاق إشارة البحث الصوتية:</p>
+                
+                <button class="action-btn" onclick="playAudioSimulation()">
+                    <svg style="width:26px; height:26px; fill:#FFF;" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    تجربة التنبيه الصوتي الحية
+                </button>
+
+                <div id="soundText" style="margin-top: 25px; font-size: 1.6rem; font-weight: 900; color: var(--secondary-neon); opacity: 0; transition: opacity 0.5s;">
+                    🔊 "أنا هنا! تم تحديد الموقع بنجاح."
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide6">
+            <div class="glass-card">
+                <h2>🎮 اختبر فهمك لفكرة العمل</h2>
+                <p style="margin-bottom: 20px;">كيف يضمن Smart Guardian الوصول للسيارة أو الحقيبة المفقودة؟</p>
+                
+                <div class="quiz-container">
+                    <div class="quiz-option" onclick="checkQuiz(false, this)">
+                        <span>⚪</span>
+                        <span>عن طريق الاتصال الصوتي المباشر بالشرطة تلقائياً.</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkQuiz(true, this)">
+                        <span>⚪</span>
+                        <span>إرسال إحداثيات GPS الدقيقة للأقمار الصناعية ثم إلى تطبيق الهاتف.</span>
+                    </div>
+                    <div class="quiz-option" onclick="checkQuiz(false, this)">
+                        <span>⚪</span>
+                        <span>بالاعتماد فقط على البلوتوث المباشر على بعد 5 أمتار.</span>
+                    </div>
+                </div>
+
+                <div id="quizFeedback" class="quiz-feedback"></div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide7">
+            <div class="glass-card">
+                <h2>أين يمكنك استخدام Smart Guardian؟</h2>
+                <div class="grid-cards">
+                    <div class="feature-box">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                        <strong style="color:#FFF;">السيارات والمركبات</strong>
+                    </div>
+                    <div class="feature-box">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M15.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM5 12c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8.5c-1.9 0-3.5-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zm5.8-6.2l2.4-2.4.8.8c.9.9 2.1 1.4 3.4 1.3v-2c-.8 0-1.5-.3-2.1-.8l-1.9-1.9c-.4-.4-1-.6-1.6-.6s-1.1.2-1.4.6L7.8 11.7c-.4.4-.6.9-.5 1.5.1.6.5 1.1 1 1.3L12 16v5h2v-6.2l-3.2-1.3z"/></svg>
+                        <strong style="color:#FFF;">الدراجات الهوائية والنارية</strong>
+                    </div>
+                    <div class="feature-box">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+                        <strong style="color:#FFF;">أمتعة السفر والحقائب</strong>
+                    </div>
+                    <div class="feature-box">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        <strong style="color:#FFF;">الأطفال وكبار السن</strong>
+                    </div>
+                    <div class="feature-box">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4.5 10.5C3.67 10.5 3 11.17 3 12s.67 1.5 1.5 1.5S6 12.83 6 12s-.67-1.5-1.5-1.5zm15 0c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM12 4.5C7.31 4.5 3.5 8.31 3.5 13c0 2.12.78 4.07 2.07 5.57L4 20.5l1.5 1.5 1.93-1.57C8.93 21.22 10.88 22 13 22c4.69 0 8.5-3.81 8.5-8.5 0-4.69-3.81-8.5-8.5-8.5z"/></svg>
+                        <strong style="color:#FFF;">الحيوانات الأليفة</strong>
+                    </div>
+                    <div class="feature-box">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.6C.4 7 1 10 3 12c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.4-.4.4-1.1 0-1.5z"/></svg>
+                        <strong style="color:#FFF;">المعدات والأدوات الثمينة</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide8">
+            <div class="glass-card">
+                <h2>لماذا تختار Smart Guardian؟</h2>
+                <div class="grid-cards">
+                    <div class="feature-box">
+                        <span style="font-size:2rem;">🔋</span>
+                        <strong style="color:var(--secondary-neon)">بطارية تدوم طويلاً</strong>
+                        <small style="color:var(--text-sub)">شحن ذكي مع وضع التوفير</small>
+                    </div>
+                    <div class="feature-box">
+                        <span style="font-size:2rem;">🎯</span>
+                        <strong style="color:var(--secondary-neon)">دقة فائقة</strong>
+                        <small style="color:var(--text-sub)">تحديد مكان الخطأ فيه سنتمترات</small>
+                    </div>
+                    <div class="feature-box">
+                        <span style="font-size:2rem;">🌍</span>
+                        <strong style="color:var(--secondary-neon)">تغطية عالمية</strong>
+                        <small style="color:var(--text-sub)">ارتباط سلس مع الشبكات</small>
+                    </div>
+                    <div class="feature-box">
+                        <span style="font-size:2rem;">⚡</span>
+                        <strong style="color:var(--secondary-neon)">تنبيهات فورية</strong>
+                        <small style="color:var(--text-sub)">إشعارات عند الخروج من النطاق</small>
+                    </div>
+                    <div class="feature-box">
+                        <span style="font-size:2rem;">🌐</span>
+                        <strong style="color:var(--secondary-neon)">دعم ثلاث لغات</strong>
+                        <small style="color:var(--text-sub)">العربية، الإنجليزية، والفرنسية</small>
+                    </div>
+                    <div class="feature-box">
+                        <span style="font-size:2rem;">🎙️</span>
+                        <strong style="color:var(--secondary-neon)">إرشاد صوتي</strong>
+                        <small style="color:var(--text-sub)">توجيه تفاعلي خطوة بخطوة</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide9">
+            <div class="glass-card">
+                <h2>طرق تثبيت متعددة وسهلة</h2>
+                <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="feature-box" style="padding:25px 15px;">
+                        <span style="font-size:2.2rem;">🧲</span>
+                        <h3 style="color:#FFF;">مغناطيس قوي</h3>
+                        <p style="font-size:0.9rem;">تثبيت فوري وآمن على هياكل السيارات والأسطح المعدنية.</p>
+                    </div>
+                    <div class="feature-box" style="padding:25px 15px;">
+                        <span style="font-size:2.2rem;">🏷️</span>
+                        <h3 style="color:#FFF;">لاصق مدمج</h3>
+                        <p style="font-size:0.9rem;">مثالي للحقائب، الأجهزة الإلكترونية، والأغراض الشخصية.</p>
+                    </div>
+                    <div class="feature-box" style="padding:25px 15px;">
+                        <span style="font-size:2.2rem;">🔩</span>
+                        <h3 style="color:#FFF;">براغي تثبيت</h3>
+                        <p style="font-size:0.9rem;">لتثبيت دائم ومحكم على الجدران أو المعدات والآلات الثقيلة.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide" id="slide10">
+            <div class="glass-card" style="background: rgba(10, 15, 30, 0.9); border-color: var(--secondary-neon);">
+                <h2 style="color: var(--secondary-neon);">Smart Guardian</h2>
+                <p style="font-size: 1.3rem; line-height: 1.9; margin: 20px 0; color: #FFF;">
+                    ليس مجرد جهاز تتبع عادي... بل هو **حل متكامل يمنحك الطمأنينة والأمان** لحماية كل ما تملك بأعلى كفاءة وأنسب تكلفة.
+                </p>
+                <div style="background: rgba(88, 44, 255, 0.15); padding: 22px; border-radius: 20px; border-right: 4px solid var(--secondary-neon); margin-top: 20px; text-align: right;">
+                    🚀 <strong style="color: var(--secondary-neon); font-size: 1.1rem;">رؤيتنا المستقبلية:</strong> 
+                    تطوير المنتج بخبرات وطنية ليصبح علامة تونسية مبتكرة تنافس المنتجات العالمية في سوق التكنولوجيا الذكية. 🇹🇳✨
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // إخفاء شاشة التحميل سينمائياً
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('intro-loader');
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+            }, 2200);
+        });
+
+        const deck = document.getElementById('deckContainer');
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        let soundEnabled = true;
+
+        // نظام الصوت البرمجي (Web Audio API) للتفاعل الاحترافي
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSynthesizedSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'success') {
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3); // A5
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'error') {
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(110, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('audioToggleBtn').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // مراقبة الشريحة النشطة وانيميشن الدخول
+        const observerOptions = {
+            root: deck,
+            threshold: 0.5
+        };
+
+        const slideObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    const index = Array.from(slides).indexOf(entry.target);
+                    updateDots(index);
+                    
+                    // تشغيل العدادات إذا كانت الشريحة تحتوي عليها
+                    if (entry.target.querySelector('.stat-number')) {
+                        animateCounters(entry.target);
+                    }
+                } else {
+                    entry.target.classList.remove('active');
+                }
+            });
+        }, observerOptions);
+
+        slides.forEach(slide => slideObserver.observe(slide));
+
+        function updateDots(index) {
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+
+        function scrollToSlide(index) {
+            deck.scrollTo({
+                top: index * window.innerHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // انيميشن الأرقام المتزايدة
+        function animateCounters(slide) {
+            const counters = slide.querySelectorAll('.stat-number');
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-target');
+                let count = 0;
+                const speed = target / 50;
+                
+                const updateCount = () => {
+                    count += speed;
+                    if (count < target) {
+                        counter.innerText = target % 1 !== 0 ? count.toFixed(1) : Math.ceil(count);
+                        setTimeout(updateCount, 30);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+                updateCount();
+            });
+        }
+
+        // محاكاة التنبيه الصوتي
+        function playAudioSimulation() {
+            const textElement = document.getElementById('soundText');
+            textElement.style.opacity = '1';
+            playSynthesizedSound('success');
+            
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const speech = new SpeechSynthesisUtterance("أنا هنا! تم تحديد الموقع بنجاح");
+                speech.lang = 'ar-SA';
+                speech.pitch = 1.1;
+                speech.rate = 0.9;
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        // إدارة لعبة اختبر فهمك
+        function checkQuiz(isCorrect, element) {
+            const feedback = document.getElementById('quizFeedback');
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach(opt => {
+                opt.style.borderColor = 'var(--glass-border)';
+                opt.style.background = 'rgba(255, 255, 255, 0.05)';
+            });
+
+            feedback.style.display = 'block';
+
+            if (isCorrect) {
+                playSynthesizedSound('success');
+                element.style.borderColor = 'var(--secondary-neon)';
+                element.style.background = 'rgba(0, 245, 160, 0.15)';
+                feedback.style.background = 'rgba(0, 245, 160, 0.2)';
+                feedback.style.color = 'var(--secondary-neon)';
+                feedback.innerHTML = '🎉 إجابة رائعة! لقد فهمت طريقة عمل نظام Smart Guardian الذكي بنجاح.';
+                
+                setTimeout(() => {
+                    scrollToSlide(6);
+                }, 2000);
+            } else {
+                playSynthesizedSound('error');
+                element.style.borderColor = 'var(--accent-coral)';
+                element.style.background = 'rgba(255, 71, 87, 0.15)';
+                feedback.style.background = 'rgba(255, 71, 87, 0.2)';
+                feedback.style.color = 'var(--accent-coral)';
+                feedback.innerHTML = '❌ إجابة غير دقيقة. جرب اختيار الخيار الذي يعتمد على الأقمار الصناعية والتطبيق!';
+            }
+        }
+    </script>
+</body>
+</html>
